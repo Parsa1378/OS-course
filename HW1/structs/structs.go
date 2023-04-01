@@ -1,11 +1,13 @@
 package structs
 
 type Process struct {
-	PID            int
+	PID            string
 	AT             int
-	BT             int16
-	WaitTime       int16
-	TurnaroundTime int16
+	BT             int
+	RemainingTime  int
+	CompletionTime int
+	WaitingTime    float32
+	TurnaroundTime float32
 }
 
 type Chart struct {
@@ -15,12 +17,12 @@ type Chart struct {
 	Processes         []Process
 }
 
-func newProcess(pid int, at int, bt int16) Process {
+func newProcess(pid string, at int, bt int) Process {
 	return Process{PID: pid, AT: at, BT: bt}
 }
 
 // sort interface implementation for AT
-type AtSorter []Process
+type AtSorter []*Process
 
 func (ats AtSorter) Len() int           { return ats.Len() }
 func (ats AtSorter) Swap(i, j int)      { ats[i], ats[j] = ats[j], ats[i] }
