@@ -10,12 +10,13 @@ type Process struct {
 	TurnaroundTime float32
 }
 
-type Chart struct {
-	AlgorithmName     string
-	AvgWaitingTime    int16
-	AvgTurnaroundTime int16
-	Processes         []Process
-}
+//?
+// type Chart struct {
+// 	AlgorithmName     string
+// 	AvgWaitingTime    int16
+// 	AvgTurnaroundTime int16
+// 	Processes         []Process
+// }
 
 func newProcess(pid string, at int, bt int) Process {
 	return Process{PID: pid, AT: at, BT: bt}
