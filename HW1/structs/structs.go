@@ -6,10 +6,10 @@ type Process struct {
 	BT             int
 	RemainingTime  int
 	CompletionTime int
-	WaitingTime    float32
-	TurnaroundTime float32
+	WaitingTime    int
+	TurnaroundTime int
 }
 
-func newProcess(pid string, at int, bt int) Process {
+func NewProcess(pid string, at int, bt int) Process {
 	return Process{PID: pid, AT: at, BT: bt}
 }
