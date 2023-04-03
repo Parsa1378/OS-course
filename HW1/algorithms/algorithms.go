@@ -7,20 +7,20 @@ import (
 	"github.com/Parsa1378/OS-course/structs"
 )
 
-func FCFS(processes *[]structs.Process) {
+func FCFS(processes []structs.Process) {
 	//sorting based on AT
-	l := len(*processes)
-	sort.Slice(*processes, func(i, j int) bool {
-		return (*processes)[i].AT < (*processes)[j].AT
+	l := len(processes)
+	sort.Slice(processes, func(i, j int) bool {
+		return processes[i].AT < processes[j].AT
 	})
 	for i := 0; i < l; i++ {
 		if i == 0 {
-			(*processes)[i].CompletionTime = (*processes)[i].BT + (*processes)[i].AT
+			processes[i].CompletionTime = processes[i].BT + processes[i].AT
 		} else {
-			(*processes)[i].CompletionTime = (*processes)[i-1].CompletionTime + (*processes)[i].BT
+			processes[i].CompletionTime = processes[i-1].CompletionTime + processes[i].BT
 		}
-		(*processes)[i].TurnaroundTime = (*processes)[i].CompletionTime - (*processes)[i].AT
-		(*processes)[i].WaitingTime = (*processes)[i].TurnaroundTime - (*processes)[i].BT
+		processes[i].TurnaroundTime = processes[i].CompletionTime - processes[i].AT
+		processes[i].WaitingTime = processes[i].TurnaroundTime - processes[i].BT
 	}
 }
 
