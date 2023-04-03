@@ -1,9 +1,10 @@
 package algorithms
 
 import (
-	"OS-course/HW1/structs"
 	"sort"
 	"sync"
+
+	"github.com/Parsa1378/OS-course/structs"
 )
 
 func FCFS(processes []*structs.Process) {
