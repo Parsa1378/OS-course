@@ -1,102 +1,80 @@
 package algorithms
 
 import (
+	"fmt"
 	"sort"
-	"sync"
 
 	"github.com/Parsa1378/OS-course/structs"
 )
 
-func FCFS(processes []*structs.Process) {
+func FCFS(processes *[]structs.Process) {
 	//sorting based on AT
-	sort.Sort(structs.AtSorter(processes))
-	completionTime := 0
-	var wg sync.WaitGroup
-	for _, process := range processes {
-		wg.Add(1)
-		go func(p *structs.Process) {
-			defer wg.Done()
-			if completionTime < p.AT {
-				completionTime = p.AT
-			}
-			p.CompletionTime = completionTime + p.BT
-			p.TurnaroundTime = float32(p.CompletionTime - p.AT)
-			p.WaitingTime = p.TurnaroundTime - float32(p.BT)
-			completionTime = p.CompletionTime
-		}(process)
+	l := len(*processes)
+	sort.Slice(*processes, func(i, j int) bool {
+		return (*processes)[i].AT < (*processes)[j].AT
+	})
+	for i := 0; i < l; i++ {
+		if i == 0 {
+			(*processes)[i].CompletionTime = (*processes)[i].BT + (*processes)[i].AT
+		} else {
+			(*processes)[i].CompletionTime = (*processes)[i-1].CompletionTime + (*processes)[i].BT
+		}
+		(*processes)[i].TurnaroundTime = (*processes)[i].CompletionTime - (*processes)[i].AT
+		(*processes)[i].WaitingTime = (*processes)[i].TurnaroundTime - (*processes)[i].BT
 	}
-	wg.Wait()
 }
 
-func RR(processes []*structs.Process) {
-	totalTime := 0
-	// time := 0
-	// n := len(processes) - 1
-	// queue := make([]structs.Process, n)
-	// remainingProcesses := len(processes)
-	timeQuantum := 2
-	// sort.Sort(structs.AtSorter(processes))
-	for i := 0; i < len(processes); i++ {
-		processes[i].RemainingTime = processes[i].BT
-		totalTime += processes[i].BT
-		// queue = append(queue, *processes[i])
-	}
-	// without goroutine
-	// for len(queue) > 0 {
-	// 	topProcess := queue[0]
-	// 	if topProcess.RemainingTime > 0 {
-	// 		topProcess.RemainingTime -= timeQuantum
-	// 		time += timeQuantum
-	// 		if topProcess.RemainingTime <= 0 {
-	// 			queue = queue[1:]
-	// 			n--
-	// 			topProcess.CompletionTime = time
-	// 			topProcess.TurnaroundTime = float32(time - topProcess.AT)
-	// 			topProcess.WaitingTime = float32(topProcess.TurnaroundTime) - float32(topProcess.BT)
-	// 		} else {
-	// 			for i := n; i < 0; i-- {
-	// 				queue[i-1] = queue[i]
-	// 			}
-	// 			queue[n] = topProcess
-	// 		}
-	// 	}
-	// }
+func RR(processes []structs.Process) {
+	n := len(processes)
+	sort.Slice(processes, func(i, j int) bool {
+		return processes[i].AT < processes[j].AT
+	})
 
-	queue := make(chan *structs.Process)
-	done := make(chan bool)
-	go func() {
-		for _, process := range processes {
-			queue <- process
-		}
-		done <- true
-	}()
-	go func() {
-		time := 0
-		activeProcesses := &structs.Process{}
-		for {
-			if activeProcesses.RemainingTime > 0 {
-				activeProcesses.RemainingTime -= timeQuantum
-				time += timeQuantum
-				if activeProcesses.RemainingTime <= 0 {
-					activeProcesses.CompletionTime = time
-					activeProcesses.TurnaroundTime = float32(time - activeProcesses.AT)
-					activeProcesses.WaitingTime = float32(activeProcesses.TurnaroundTime) - float32(activeProcesses.BT)
-					queue <- activeProcesses
-				}
-			}
-			if activeProcesses.RemainingTime <= 0 {
-				if len(queue) > 0 {
-					activeProcesses = <-queue
-				} else if time >= totalTime {
-					done <- true
-					return
-				} else {
-					time++
-				}
-			}
-		}
-	}()
-	for i := 0; i < len(processes); i++ {
-		<-queue
+	for i := 0; i < n; i++ {
+		processes[i].RemainingTime = processes[i].BT
 	}
+	var queue []*structs.Process
+	timeQuantum := 2
+	time := 0
+	queue = append(queue, &processes[0])
+	lastIn := 0
+	for len(queue) > 0 {
+		if queue[0].RemainingTime > timeQuantum {
+			queue[0].RemainingTime -= timeQuantum
+			time += timeQuantum
+			if queue[0].RemainingTime <= 0 {
+				queue[0].RemainingTime = 0
+				queue[0].CompletionTime = queue[0].BT
+				queue[0].TurnaroundTime = queue[0].CompletionTime - queue[0].AT
+				queue[0].WaitingTime = queue[0].TurnaroundTime - queue[0].BT
+				queue = queue[1:]
+			}
+
+			for i := lastIn + 1; i < n; i++ {
+				if processes[i].AT <= time {
+					queue = append(queue, &processes[i])
+					lastIn = i
+				}
+			}
+			top := queue[0]
+			for j := 0; j < len(queue)-1; j++ {
+				queue[j] = queue[j+1]
+			}
+			queue[len(queue)-1] = top
+		} else {
+			queue[0].CompletionTime = queue[0].RemainingTime + time
+			time += queue[0].RemainingTime
+			queue[0].RemainingTime = 0
+			queue[0].TurnaroundTime = queue[0].CompletionTime - queue[0].AT
+			queue[0].WaitingTime = queue[0].TurnaroundTime - queue[0].BT
+			queue = queue[1:]
+			for i := lastIn + 1; i < n; i++ {
+				if processes[i].AT <= time {
+					queue = append(queue, &processes[i])
+					lastIn = i
+				}
+			}
+		}
+	}
+	fmt.Println(processes)
 }
