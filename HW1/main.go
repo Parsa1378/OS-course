@@ -13,7 +13,7 @@ import (
 
 func main() {
 	processes := readProcesses("./test.txt")
-	algorithms.FCFS(processes)
+	algorithms.RR(processes)
 	fmt.Println(result(processes))
 }
 

@@ -33,12 +33,13 @@ func RR(processes []structs.Process) {
 	for i := 0; i < n; i++ {
 		processes[i].RemainingTime = processes[i].BT
 	}
+	lastAT := processes[n-1].AT
 	var queue []*structs.Process
 	timeQuantum := 2
 	time := 0
 	queue = append(queue, &processes[0])
 	lastIn := 0
-	for len(queue) > 0 {
+	for len(queue) > 0 || time < lastAT {
 		if queue[0].RemainingTime > timeQuantum {
 			queue[0].RemainingTime -= timeQuantum
 			time += timeQuantum
